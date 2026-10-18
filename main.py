@@ -18,6 +18,7 @@ if sys.platform == "win32":
 
 from core.config import load_config
 from core.network import get_external_ip
+from core.i18n import t, get_system_lang
 from cli.terminal import start_cli_loop
 from web.server import create_app
 
@@ -36,11 +37,11 @@ ASCII_ART = r"""
  |_| \_|\___|\__|_| |_|\__,_|_.__/ 
 """
 
-BANNER = f"""{CYAN}{ASCII_ART}{RESET}{BOLD}   Windows 11 White IP Inspector, UPnP Port Forwarder & Host Controller
-   Release: 1.0.0
+def get_banner():
+    subtitle = t("banner_subtitle")
+    return f"""{CYAN}{ASCII_ART}{RESET}{BOLD}   {subtitle}
+   Release: 1.0.0 | Language: {get_system_lang().upper()}
 {RESET}"""
-
-
 
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
@@ -51,8 +52,8 @@ def run_web_server(config):
     display_url = f"http://localhost:{port}"
 
     print(f"\n{GREEN}{'='*60}{RESET}")
-    print(f"{BOLD}{GREEN}  [OK] Web control panel running on {display_url}{RESET}")
-    print(f"{YELLOW}  [INFO] Press Ctrl+C in this console to terminate server.{RESET}")
+    print(f"{BOLD}{GREEN}  [OK] {t('web_running')} {display_url}{RESET}")
+    print(f"{YELLOW}  [INFO] {t('web_ctrl_c')}{RESET}")
     print(f"{GREEN}{'='*60}{RESET}\n")
 
     # Автоматическое открытие в браузере Windows
@@ -69,26 +70,26 @@ def main():
         os.system("")
 
     clear_screen()
-    print(BANNER)
+    print(get_banner())
 
     config = load_config()
 
-    print(f"{YELLOW}[INFO] Probing public network gateway...{RESET}")
+    print(f"{YELLOW}[INFO] {t('probing_gateway')}{RESET}")
     try:
         external_ip = asyncio.run(get_external_ip())
     except Exception as e:
         external_ip = f"Unreachable ({e})"
 
-    print(f"{BOLD}Public IP Address:{RESET} {GREEN}{BOLD}{external_ip}{RESET}\n")
+    print(f"{BOLD}{t('public_ip_label')}{RESET} {GREEN}{BOLD}{external_ip}{RESET}\n")
     print(f"{CYAN}{'-'*60}{RESET}")
 
     while True:
-        print(f"{BOLD}Select Execution Mode:{RESET}")
-        print(f"  [{BOLD}1{RESET}] Interactive Terminal ({CYAN}CLI Mode{RESET})")
-        print(f"  [{BOLD}2{RESET}] Self-Hosted Web UI ({GREEN}Web UI Mode{RESET})")
-        print(f"  [{BOLD}0{RESET}] Exit")
+        print(f"{BOLD}{t('select_mode')}{RESET}")
+        print(f"  [{BOLD}1{RESET}] {t('mode_cli')}")
+        print(f"  [{BOLD}2{RESET}] {t('mode_web')}")
+        print(f"  [{BOLD}0{RESET}] {t('mode_exit')}")
 
-        mode = input(f"\n{BOLD}Action [1/2/0]: {RESET}").strip()
+        mode = input(f"\n{BOLD}{t('action_prompt')}{RESET}").strip()
 
         if mode == "1":
             action = start_cli_loop(config)
@@ -99,10 +100,10 @@ def main():
             run_web_server(config)
             break
         elif mode == "0":
-            print(f"\n{CYAN}NetHub process terminated.{RESET}")
+            print(f"\n{CYAN}{t('shutdown')}{RESET}")
             sys.exit(0)
         else:
-            print(f"{RED}[ERR] Invalid command selection. Expected 1, 2 or 0.{RESET}\n")
+            print(f"{RED}[ERR] {t('invalid_choice')}{RESET}\n")
 
 if __name__ == "__main__":
     try:

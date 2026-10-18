@@ -10,7 +10,9 @@ from core.config import AppConfig, load_config
 from core.network import get_external_ip, get_network_interfaces, scan_ports, ping_host, analyze_ip_details, check_external_port
 from core.upnp import forward_port_upnp
 from core.launcher import launch_application
+from core.i18n import get_system_lang
 from web.templates import INDEX_HTML
+
 
 
 LOGIN_PAGE_HTML = """<!DOCTYPE html>
@@ -272,5 +274,10 @@ def create_app(config: Optional[AppConfig] = None) -> FastAPI:
             {"id": "web", "name": "Web Server / HTTP", "port": 8080, "protocol": "TCP", "category": "Web", "desc": "Сайт, локальная веб-панель или API"}
         ]
 
+    @app.get("/api/system-lang")
+    async def api_system_lang():
+        return {"lang": get_system_lang()}
+
     return app
+
 
