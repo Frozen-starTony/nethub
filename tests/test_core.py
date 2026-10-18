@@ -12,8 +12,9 @@ if sys.platform == "win32":
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.config import load_config
-from core.network import get_network_interfaces, scan_port, ping_host
+from core.network import get_network_interfaces, scan_port, ping_host, analyze_ip_details
 from core.launcher import launch_application
+
 
 def test_config():
     cfg = load_config()
@@ -45,10 +46,18 @@ def test_launcher():
     assert res["success"] is False, "Unknown app should fail safely"
     print("[PASS] test_launcher_safety_validation")
 
+def test_ip_analysis():
+    data = asyncio.run(analyze_ip_details("8.8.8.8"))
+    assert "ip_type" in data
+    assert data["is_white"] is True
+    print(f"[PASS] test_ip_analysis: detected {data['ip_type']} for 8.8.8.8")
+
 if __name__ == "__main__":
     test_config()
     test_interfaces()
     test_network()
+    test_ip_analysis()
     test_launcher()
     print("\n[OK] All core test suites passed successfully.")
+
 

@@ -7,9 +7,11 @@ import urllib.parse
 import httpx
 
 from core.config import AppConfig, load_config
-from core.network import get_external_ip, get_network_interfaces, scan_ports, ping_host
+from core.network import get_external_ip, get_network_interfaces, scan_ports, ping_host, analyze_ip_details, check_external_port
+from core.upnp import forward_port_upnp
 from core.launcher import launch_application
 from web.templates import INDEX_HTML
+
 
 LOGIN_PAGE_HTML = """<!DOCTYPE html>
 <html lang="en" class="dark">
@@ -235,4 +237,40 @@ def create_app(config: Optional[AppConfig] = None) -> FastAPI:
         res = launch_application(app_id, config)
         return res
 
+    # --- СЕРВИСЫ БЕЛОГО IP И UPnP ПРОБРОСА ---
+
+    @app.get("/api/ip-analysis")
+    async def api_ip_analysis(_=Depends(check_auth)):
+        return await analyze_ip_details()
+
+    class PortCheckRequest(BaseModel):
+        port: int
+
+    @app.post("/api/check-port")
+    async def api_check_port(req: PortCheckRequest, _=Depends(check_auth)):
+        return await check_external_port(req.port)
+
+    class UpnpRequest(BaseModel):
+        port: int
+        protocol: str = "TCP"
+        description: str = "NetHub Service"
+
+    @app.post("/api/upnp-forward")
+    async def api_upnp_forward(req: UpnpRequest, _=Depends(check_auth)):
+        return forward_port_upnp(req.port, req.protocol, req.description)
+
+    @app.get("/api/presets")
+    async def api_presets(_=Depends(check_auth)):
+        return [
+            {"id": "minecraft", "name": "Minecraft Server", "port": 25565, "protocol": "TCP", "category": "Gaming", "desc": "Стандартный порт сервера Minecraft Java Edition"},
+            {"id": "palworld", "name": "Palworld Dedicated Server", "port": 8211, "protocol": "UDP", "category": "Gaming", "desc": "Выделенный сервер Palworld"},
+            {"id": "cs2", "name": "Counter-Strike 2 / Source", "port": 27015, "protocol": "UDP", "category": "Gaming", "desc": "Игровой сервер CS2 / Source Engine"},
+            {"id": "valheim", "name": "Valheim Dedicated Server", "port": 2456, "protocol": "UDP", "category": "Gaming", "desc": "Кооперативный сервер Valheim"},
+            {"id": "terraria", "name": "Terraria Server", "port": 7777, "protocol": "TCP", "category": "Gaming", "desc": "Многопользовательский сервер Terraria"},
+            {"id": "rdp", "name": "Windows Remote Desktop (RDP)", "port": 3389, "protocol": "TCP", "category": "Remote", "desc": "Удаленное управление рабочим столом Windows"},
+            {"id": "jellyfin", "name": "Jellyfin Media Server", "port": 8096, "protocol": "TCP", "category": "Media", "desc": "Домашний кинотеатр и медиасервер"},
+            {"id": "web", "name": "Web Server / HTTP", "port": 8080, "protocol": "TCP", "category": "Web", "desc": "Сайт, локальная веб-панель или API"}
+        ]
+
     return app
+

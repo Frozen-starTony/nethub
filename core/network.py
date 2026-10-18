@@ -152,3 +152,80 @@ async def ping_host(host: str, timeout_ms: int = 2000) -> Dict[str, Any]:
             "alive": False,
             "error": str(e)
         }
+
+async def analyze_ip_details(ip: Optional[str] = None) -> Dict[str, Any]:
+    """Глубокий анализ: Белый (Public) или Серый (CGNAT) IP-адрес, провайдер и геолокация."""
+    if not ip or "Не удалось" in ip or "Unreachable" in ip:
+        ip = await get_external_ip()
+
+    is_cgnat = False
+    is_private = False
+    ip_type = "UNKNOWN"
+
+    # Проверка диапазонов
+    if ip.startswith("100."):
+        # Проверяем 100.64.0.0/10 (CGNAT)
+        parts = [int(p) for p in ip.split(".") if p.isdigit()]
+        if len(parts) == 4 and parts[0] == 100 and (64 <= parts[1] <= 127):
+            is_cgnat = True
+            ip_type = "GRAY_CGNAT"
+
+    if (ip.startswith("10.") or 
+        ip.startswith("192.168.") or 
+        (ip.startswith("172.") and len(ip.split(".")) == 4 and 16 <= int(ip.split(".")[1]) <= 31)):
+        is_private = True
+        ip_type = "PRIVATE"
+
+    if not is_cgnat and not is_private and "." in ip:
+        ip_type = "WHITE_PUBLIC"
+
+    # Запрос данных о провайдере
+    geo_data = {}
+    try:
+        async with httpx.AsyncClient(timeout=3.5) as client:
+            resp = await client.get(f"http://ip-api.com/json/{ip}?fields=status,message,country,city,isp,org,as,query")
+            if resp.status_code == 200:
+                geo_data = resp.json()
+    except Exception:
+        pass
+
+    isp = geo_data.get("isp") or geo_data.get("org") or "Не определен"
+    country = geo_data.get("country") or "Не определена"
+    city = geo_data.get("city") or "Не определен"
+    asn = geo_data.get("as") or "N/A"
+
+    return {
+        "ip": ip,
+        "ip_type": ip_type,
+        "is_white": (ip_type == "WHITE_PUBLIC"),
+        "is_cgnat": is_cgnat,
+        "isp": isp,
+        "country": country,
+        "city": city,
+        "asn": asn
+    }
+
+async def check_external_port(port: int) -> Dict[str, Any]:
+    """Проверка доступности порта из внешней сети Интернет (открыт ли порт наружу)."""
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            # Используем публичный сервис проверки портов
+            resp = await client.get(f"https://portcheck.transmissionbt.com/{port}")
+            if resp.status_code == 200:
+                is_open = (resp.text.strip() == "1")
+                return {
+                    "port": port,
+                    "is_open": is_open,
+                    "status": "OPEN" if is_open else "CLOSED_OR_FILTERED",
+                    "message": "Порт доступен из Интернета" if is_open else "Порт закрыт или блокируется провайдером/брандмауэром"
+                }
+    except Exception:
+        pass
+
+    return {
+        "port": port,
+        "is_open": False,
+        "status": "UNKNOWN",
+        "message": "Внешний сервис проверки недоступен"
+    }
+

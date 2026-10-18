@@ -52,7 +52,22 @@ def test_web_routes():
     assert ping_data["alive"] is True
     print(f"[PASS] ping_endpoint: latency {ping_data['latency_ms']} ms")
 
+    # 6. IP Analysis API
+    ip_resp = client.get("/api/ip-analysis")
+    assert ip_resp.status_code == 200
+    ip_data = ip_resp.json()
+    assert "ip_type" in ip_data
+    print(f"[PASS] ip_analysis_endpoint: type {ip_data['ip_type']}")
+
+    # 7. Presets API
+    presets_resp = client.get("/api/presets")
+    assert presets_resp.status_code == 200
+    presets = presets_resp.json()
+    assert len(presets) >= 5
+    print(f"[PASS] presets_endpoint: {len(presets)} services configured")
+
     print("\n[OK] All Web API test suites passed successfully.")
+
 
 
 if __name__ == "__main__":

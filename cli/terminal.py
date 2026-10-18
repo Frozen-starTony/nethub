@@ -8,7 +8,8 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-from core.network import scan_ports, ping_host, get_network_interfaces, get_external_ip
+from core.network import scan_ports, ping_host, get_network_interfaces, get_external_ip, analyze_ip_details, check_external_port
+from core.upnp import forward_port_upnp
 from core.config import AppConfig
 
 CYAN = "\033[96m"
@@ -20,8 +21,50 @@ RESET = "\033[0m"
 
 def print_cli_header():
     print(f"\n{CYAN}{'='*60}{RESET}")
-    print(f"{BOLD}{CYAN}             NETHUB // INTERACTIVE TERMINAL (CLI){RESET}")
+    print(f"{BOLD}{CYAN}      NETHUB // WHITE IP & NETWORK OPERATIONS (CLI){RESET}")
     print(f"{CYAN}{'='*60}{RESET}\n")
+
+def run_ip_analysis():
+    print(f"\n{BOLD}[+] АНАЛИЗАТОР: БЕЛЫЙ ИЛИ СЕРЫЙ IP{RESET}")
+    print("[*] Опрос глобальных маршрутизаторов и провайдера...")
+    data = asyncio.run(analyze_ip_details())
+
+    print(f"\n{GREEN}{'—'*45}{RESET}")
+    print(f"Публичный IP: {BOLD}{data['ip']}{RESET}")
+    print(f"Провайдер:    {data['isp']}")
+    print(f"Локация:      {data['city']}, {data['country']}")
+    print(f"AS:           {data['asn']}")
+    print(f"{GREEN}{'—'*45}{RESET}")
+
+    if data["is_white"]:
+        print(f"\n  {GREEN}[ВЕРДИКТ] БЕЛЫЙ (ПУБЛИЧНЫЙ) IP!{RESET}")
+        print("  Ваш ПК напрямую доступен из Интернета. Вы можете хостить серверы")
+        print("  (Minecraft, CS2, Palworld) и использовать RDP. Достаточно открыть порт через UPnP.")
+    elif data["is_cgnat"]:
+        print(f"\n  {YELLOW}[ВЕРДИКТ] СЕРЫЙ IP (CGNAT / NAT ПРОВАЙДЕРА)!{RESET}")
+        print("  Провайдер заблокировал прямой входящий трафик.")
+        print("  Решение: подключите услугу 'Белый/Статический IP' у провайдера")
+        print("  или бесплатно используйте Playit.gg / Cloudflare Tunnels.")
+    else:
+        print(f"\n  {CYAN}[ВЕРДИКТ] Стандартный публичный маршрут.{RESET}")
+
+def run_upnp_forward():
+    print(f"\n{BOLD}[+] UPNP АВТО-ПРОБРОС ПОРТОВ (БЕЗ ВХОДА В РОУТЕР){RESET}")
+    port_input = input("-> Укажите порт для открытия (например, 25565 для Minecraft, 8080 для Web): ").strip()
+    if not port_input.isdigit():
+        print(f"{RED}[ERR] Неверный номер порта!{RESET}")
+        return
+
+    port = int(port_input)
+    proto = input("-> Протокол [TCP/UDP, по умолчанию TCP]: ").strip().upper() or "TCP"
+
+    print(f"[*] Отправка UPnP команды на роутер для порта {port} ({proto})...")
+    res = forward_port_upnp(port, proto, f"NetHub CLI {port}")
+
+    if res["success"]:
+        print(f"\n  {GREEN}[OK] {res['message']}{RESET}")
+    else:
+        print(f"\n  {RED}[FAIL] {res['error']}{RESET}")
 
 def run_port_scanner():
     print(f"\n{BOLD}[+] TCP PORT INSPECTOR{RESET}")
@@ -29,7 +72,7 @@ def run_port_scanner():
 
     ports_input = input("-> Port Range or Comma List (e.g. 1-1024 or 80,443): ").strip()
     if not ports_input:
-        ports = [21, 22, 23, 25, 53, 80, 110, 135, 139, 443, 445, 1433, 3306, 3389, 5432, 8000, 8080]
+        ports = [21, 22, 23, 25, 53, 80, 110, 135, 139, 443, 445, 1433, 3306, 3389, 5432, 8000, 8080, 25565]
         print(f"{YELLOW}[INFO] Using top standard service ports ({len(ports)} targets){RESET}")
     elif "-" in ports_input:
         try:
@@ -92,27 +135,33 @@ def run_network_status():
 def start_cli_loop(config: AppConfig):
     while True:
         print_cli_header()
-        print("  [1] TCP Port Inspector")
-        print("  [2] Host Ping Diagnostic")
-        print("  [3] Network Adapters & IP Status")
-        print("  [4] Launch Web UI Control Plane")
-        print("  [0] Exit")
+        print("  [1] Анализ: Белый или Серый IP (White vs CGNAT)")
+        print("  [2] UPnP: Авто-проброс портов (Minecraft, RDP, Web)")
+        print("  [3] Сканирование портов (Port Scanner)")
+        print("  [4] Проверка доступности хоста (Ping)")
+        print("  [5] Сетевые интерфейсы и адаптеры")
+        print("  [6] Запустить Веб-панель управления")
+        print("  [0] Выход")
         
-        choice = input(f"\n{BOLD}Select action [0-4]: {RESET}").strip()
+        choice = input(f"\n{BOLD}Выберите действие [0-6]: {RESET}").strip()
         
         if choice == "1":
-            run_port_scanner()
+            run_ip_analysis()
         elif choice == "2":
-            run_host_check()
+            run_upnp_forward()
         elif choice == "3":
-            run_network_status()
+            run_port_scanner()
         elif choice == "4":
-            print(f"\n{YELLOW}[*] Initializing Web UI Server...{RESET}")
+            run_host_check()
+        elif choice == "5":
+            run_network_status()
+        elif choice == "6":
+            print(f"\n{YELLOW}[*] Запуск веб-сервера NetHub...{RESET}")
             return "SWITCH_TO_WEB"
         elif choice == "0":
-            print(f"\n{CYAN}NetHub shutdown complete.{RESET}")
+            print(f"\n{CYAN}Завершение работы NetHub.{RESET}")
             sys.exit(0)
         else:
-            print(f"{RED}[ERR] Invalid input selection.{RESET}")
+            print(f"{RED}[ERR] Неверный выбор.{RESET}")
 
-        input(f"\n{YELLOW}Press Enter to return to main menu...{RESET}")
+        input(f"\n{YELLOW}Нажмите Enter для возврата в главное меню...{RESET}")

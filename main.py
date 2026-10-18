@@ -36,9 +36,10 @@ ASCII_ART = r"""
  |_| \_|\___|\__|_| |_|\__,_|_.__/ 
 """
 
-BANNER = f"""{CYAN}{ASCII_ART}{RESET}{BOLD}   High-Performance Network Operations & Process Control
-   Platform: Windows 11 | Release: 1.0.0
+BANNER = f"""{CYAN}{ASCII_ART}{RESET}{BOLD}   Windows 11 White IP Inspector, UPnP Port Forwarder & Host Controller
+   Release: 1.0.0
 {RESET}"""
+
 
 
 def clear_screen():

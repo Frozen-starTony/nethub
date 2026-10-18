@@ -4,26 +4,27 @@
 [License-Badge]: https://img.shields.io/badge/license-MIT-black?style=flat-square
 [Python-Badge]: https://img.shields.io/badge/python-3.10%2B-black?style=flat-square
 [Platform-Badge]: https://img.shields.io/badge/platform-Windows%2011-black?style=flat-square
-[Architecture-Badge]: https://img.shields.io/badge/architecture-hybrid%20cli%20%2B%20web-black?style=flat-square
+[Focus-Badge]: https://img.shields.io/badge/focus-White%20IP%20%26%20UPnP%20Self--Host-black?style=flat-square
 
 ![Release][Release-Badge]
 ![License][License-Badge]
 ![Python][Python-Badge]
 ![Platform][Platform-Badge]
-![Architecture][Architecture-Badge]
+![Focus][Focus-Badge]
 
-> High-performance hybrid network diagnostics and background process manager for Windows 11. Combines an interactive sysadmin CLI with an embedded zero-dependency web control plane secured by Google OAuth 2.0.
+> The definitive Windows 11 toolkit for detecting White (Public) vs Gray (CGNAT) IP addresses, 1-click UPnP router port forwarding without admin credentials, and maximizing self-hosted servers (Minecraft, Palworld, CS2, RDP).
 
 ---
 
 ## Overview
 
-NetHub is an engineered Windows 11 network operations utility designed for system administrators, developers, and power users. It unifies low-latency network diagnostic primitives with local process orchestration under a single standalone binary.
+NetHub solves the single most common headache in local game server hosting and self-hosting: **"Do I have a White (Public) IP, or am I trapped behind my ISP's CGNAT?"** and **"How do I open ports without logging into my router?"**
 
-- **Zero-Dependency Control Plane:** Embedded single-page dashboard styled with Tailwind CSS, running in-process via FastAPI and Uvicorn.
-- **Asynchronous Concurrent Scanner:** High-throughput TCP socket verification with bounded worker semaphores powered by Python's native `asyncio`.
-- **Identity-Gated Local Execution:** Strict email-whitelisted Google OAuth 2.0 access control with a zero-friction fallback development mode.
-- **Controlled Process Dispatcher:** Safe host process and Windows shortcut (`.lnk`) execution constrained strictly to local access control lists.
+- **Real-Time White vs Gray IP Inspector:** Instant classification of your public route (`WHITE_PUBLIC`, `GRAY_CGNAT`, or `PRIVATE`) with ISP name, AS number, and geolocation.
+- **1-Click UPnP Automated Port Mapper:** Forwards game and service ports (Minecraft 25565, Palworld 8211, CS2 27015, RDP 3389) on your router instantly via UPnP SOAP protocols — zero router admin login required.
+- **External WAN Reachability Engine:** Verifies whether internet clients can actually connect to your host through external network probes.
+- **Bypass & Provisioning Playbook:** Practical guides for obtaining static IPs from major ISPs, plus zero-cost tunneling alternatives (Playit.gg, Cloudflare Tunnels, Tailscale).
+- **Embedded Control Plane:** Pure dark industrial UI running in-process via FastAPI, secured by Google OAuth 2.0 with a single-click development mode.
 
 ---
 
@@ -31,47 +32,46 @@ NetHub is an engineered Windows 11 network operations utility designed for syste
 
 ```mermaid
 flowchart TD
-    subgraph Client["Execution Layer"]
-        CLI["Interactive Console (CMD / PowerShell)"]
-        Browser["Web Control Plane (localhost:8080)"]
+    subgraph Client["Access Plane"]
+        CLI["Interactive CLI (Terminal Diagnostics)"]
+        Browser["Self-Hosted Web UI (localhost:8080)"]
     end
 
-    subgraph Core["NetHub Core Runtime"]
-        Entry["Process Entrypoint (main.py / NetHub.exe)"]
-        ConfigMgr["Configuration & Identity Parser"]
-        NetEngine["Asynchronous Network Engine"]
-        ProcLauncher["Local Process Dispatcher"]
+    subgraph Core["NetHub Engine"]
+        Inspector["White / Gray IP Inspector"]
+        UPnPEngine["UPnP SSDP / SOAP Mapper"]
+        Probe["External WAN Reachability Checker"]
+        Launcher["Process & Dedicated Server Dispatcher"]
     end
 
-    subgraph Subsystems["Windows 11 Subsystems"]
-        WinNet["Network Stack & Sockets (AF_INET / ICMP)"]
-        WinProc["Shell Execution Layer (os.startfile / Win32)"]
+    subgraph External["Network & Infrastructure"]
+        Router["Home Gateway / Router (UPnP Daemon)"]
+        Internet["Public Internet & ISP Backbone"]
+        Services["Game Servers (MC, Palworld, RDP)"]
     end
 
-    Entry --> ConfigMgr
-    Entry --> CLI
-    Entry --> Browser
-    
-    CLI --> NetEngine
-    Browser --> NetEngine
-    Browser --> ProcLauncher
+    CLI --> Inspector
+    Browser --> Inspector
+    Browser --> UPnPEngine
+    Browser --> Probe
+    Browser --> Launcher
 
-    NetEngine --> WinNet
-    ProcLauncher --> WinProc
+    UPnPEngine -->|SOAP AddPortMapping| Router
+    Probe -->|WAN Inbound Validation| Internet
+    Launcher --> Services
 ```
 
 ---
 
 ## Capability Matrix
 
-| Feature | NetHub CLI Mode | NetHub Web UI Mode | Implementation Standard |
+| Capability | White (Public) IP | Gray (CGNAT) IP | How NetHub Solves It |
 | :--- | :---: | :---: | :--- |
-| Public Gateway Resolution | Supported | Supported | Multi-vendor fallback HTTP probing |
-| TCP Port Scanner | Supported | Supported | Async socket connect (`asyncio.Semaphore`) |
-| Host Reachability Check | Supported | Supported | ICMP echo request parsing (`ping.exe`) |
-| Adapter Introspection | Supported | Supported | Subsystem query (`psutil.net_if_addrs`) |
-| Remote Process Execution | Config-driven | UI One-Click | Windows Shell invocation (`os.startfile`) |
-| Access Control | Local console | Google OAuth 2.0 | Whitelist validation (`allowed_emails`) |
+| Minecraft / Game Hosting | Native direct connect | Blocked by ISP | Automatic UPnP mapping for White IP; Playit.gg guide for Gray IP |
+| Windows Remote Desktop (RDP) | Direct WAN access | Blocked by ISP | Port 3389 forwarding or Tailscale secure tunnel guide |
+| Router Port Forwarding | Required | Ineffective | 1-Click UPnP forwarder (no 192.168.1.1 password needed) |
+| Dynamic IP Stability | Changes on reboot | Shared pool | Dynamic DNS (DDNS / DuckDNS) configuration guide |
+| ISP Status Diagnostic | Routable IPv4 | RFC 6598 (100.64.x.x) | Instant subnet and route analysis |
 
 ---
 
@@ -82,8 +82,8 @@ flowchart TD
 Pre-compiled standalone executable located in `dist/`:
 
 1. Launch `dist/NetHub.exe`.
-2. A Windows terminal window will initialize and display the primary network parameters.
-3. Select `[1]` for Interactive CLI mode or `[2]` for Web Control Plane mode.
+2. A Windows terminal window will initialize and display your IP status.
+3. Select `[1]` for Interactive CLI mode or `[2]` for Web Control Plane mode (`http://localhost:8080`).
 
 ### Option 2: Run from Source
 
@@ -101,57 +101,24 @@ python main.py
 
 ---
 
-## Configuration Reference
+## Pre-Configured UPnP Service Templates
 
-NetHub reads its operational parameters from `config.json` adjacent to the executable or script root:
+NetHub provides built-in 1-click router port mapping for popular game servers and utilities:
 
-```json
-{
-  "server": {
-    "host": "0.0.0.0",
-    "port": 8080,
-    "secret_key": "your-cryptographically-secure-key"
-  },
-  "google_oauth": {
-    "client_id": "YOUR_CLIENT_ID.apps.googleusercontent.com",
-    "client_secret": "YOUR_CLIENT_SECRET",
-    "redirect_uri": "http://localhost:8080/auth/callback",
-    "allowed_emails": [
-      "administrator@gmail.com"
-    ]
-  },
-  "apps": [
-    {
-      "id": "terminal",
-      "name": "Windows Terminal",
-      "path": "wt.exe",
-      "description": "Windows Terminal Instance"
-    },
-    {
-      "id": "ide",
-      "name": "Visual Studio Code",
-      "path": "code",
-      "description": "Developer Workspace"
-    }
-  ]
-}
-```
-
-### Google OAuth 2.0 Provisioning
-
-1. Navigate to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Under **APIs & Services** &rarr; **Credentials**, create an **OAuth 2.0 Client ID** (Application type: *Web application*).
-3. Append `http://localhost:8080/auth/callback` to **Authorized redirect URIs**.
-4. Populate `client_id` and `client_secret` in `config.json`.
-5. Specify authorized user accounts under `allowed_emails`.
-
-*Note: When `client_id` is blank or unset, NetHub runs in Development Mode, permitting immediate local evaluation.*
+- **Minecraft Java Edition:** TCP 25565
+- **Palworld Dedicated Server:** UDP 8211
+- **Counter-Strike 2 / Source:** UDP 27015
+- **Valheim Dedicated Server:** UDP 2456
+- **Terraria Multiplayer:** TCP 7777
+- **Windows Remote Desktop (RDP):** TCP 3389
+- **Jellyfin Media Server:** TCP 8096
+- **Web / HTTP Server:** TCP 8080
 
 ---
 
 ## Verification & Testing
 
-The test suite validates socket timeouts, process dispatch safety, configuration serialization, and FastAPI routing:
+The test suite validates socket timeouts, IP classification, UPnP payloads, and FastAPI endpoints:
 
 ```powershell
 python tests/test_core.py
@@ -162,9 +129,9 @@ python tests/test_web.py
 
 ## Security Model
 
-- **Restricted Command Execution:** NetHub forbids arbitrary shell command strings from the network plane. Only pre-declared identifiers in `config.json` are eligible for dispatch.
-- **Input Sanitization:** Host targets are validated against RFC-compliant regex patterns prior to shell subprocess execution.
-- **Session Integrity:** Signed HTTP cookies with strict expiration cycles.
+- **Process Isolation:** Arbitrary shell commands are forbidden; execution is restricted strictly to whitelist entries in `config.json`.
+- **Identity Gating:** Google OAuth 2.0 with email access control list (`allowed_emails`).
+- **UPnP Guard:** Local broadcast scope only, preventing external tampering.
 
 ---
 
@@ -191,5 +158,5 @@ Distributed under the [MIT License](LICENSE).
 ```
 
 <br/>
-<sub>Maintained with rigorous engineering standards. No emojis. Pure performance.</sub>
+<sub>Engineered for maximum self-hosting performance. No emojis. Pure utility.</sub>
 </div>
