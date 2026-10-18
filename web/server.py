@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
@@ -12,38 +12,45 @@ from core.launcher import launch_application
 from web.templates import INDEX_HTML
 
 LOGIN_PAGE_HTML = """<!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetHub // Авторизация</title>
+    <title>NetHub | Authentication Required</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center space-y-6">
-        <div class="w-16 h-16 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-3xl">
-            ⚡
+<body class="bg-[#09090b] text-zinc-200 min-h-screen flex items-center justify-center p-4 font-sans text-sm">
+    <div class="max-w-sm w-full bg-[#121215] border border-zinc-800 rounded-lg p-6 shadow-2xl text-center space-y-5">
+        <div class="w-10 h-10 mx-auto rounded border border-zinc-700 bg-zinc-900 flex items-center justify-center text-zinc-300">
+            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20M2 12h20"/>
+            </svg>
         </div>
         <div>
-            <h2 class="text-2xl font-bold text-white tracking-tight">Net<span class="text-cyan-400">Hub</span></h2>
-            <p class="text-sm text-slate-400 mt-1">Панель управления сетевой утилитой Windows 11</p>
+            <h1 class="text-lg font-semibold text-white tracking-tight">NetHub Access Control</h1>
+            <p class="text-xs text-zinc-400 mt-1">Identity validation required for local process and network operations.</p>
         </div>
-        <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 text-xs text-slate-300">
-            Доступ защищен авторизацией Google OAuth 2.0. Вход разрешен только доверенным аккаунтам из белого списка.
+        <div class="p-3 rounded bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400 text-left">
+            Access is restricted to verified email addresses configured in the local access control list.
         </div>
-        <a href="/auth/login" class="w-full py-3 px-4 bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-xl transition shadow-lg flex items-center justify-center space-x-3">
-            <svg class="w-5 h-5" viewBox="0 0 24 24">
+        <a href="/auth/login" class="w-full py-2 px-3 bg-zinc-100 hover:bg-white text-zinc-950 font-medium rounded transition flex items-center justify-center space-x-2 text-xs">
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/>
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
                 <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
             </svg>
-            <span>Войти с помощью Google</span>
+            <span>Continue with Google</span>
         </a>
     </div>
 </body>
 </html>
 """
+
 
 def create_app(config: Optional[AppConfig] = None) -> FastAPI:
     if config is None:
@@ -161,6 +168,10 @@ def create_app(config: Optional[AppConfig] = None) -> FastAPI:
         return RedirectResponse(url="/")
 
     # --- СТРАНИЦЫ ИНТЕРФЕЙСА ---
+
+    @app.get("/favicon.ico")
+    async def favicon():
+        return Response(status_code=204)
 
     @app.get("/", response_class=HTMLResponse)
     async def index(request: Request):

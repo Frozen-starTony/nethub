@@ -36,7 +36,9 @@ ASCII_ART = r"""
  |_| \_|\___|\__|_| |_|\__,_|_.__/ 
 """
 
-BANNER = f"{CYAN}{ASCII_ART}{RESET}{BOLD}   Windows 11 Hybrid Network Toolkit (CLI + Web UI)\n   Версия: 1.0.0\n{RESET}"
+BANNER = f"""{CYAN}{ASCII_ART}{RESET}{BOLD}   High-Performance Network Operations & Process Control
+   Platform: Windows 11 | Release: 1.0.0
+{RESET}"""
 
 
 def clear_screen():
@@ -48,8 +50,8 @@ def run_web_server(config):
     display_url = f"http://localhost:{port}"
 
     print(f"\n{GREEN}{'='*60}{RESET}")
-    print(f"{BOLD}{GREEN}  [✓] Веб-панель запущена на {display_url}{RESET}")
-    print(f"{YELLOW}  [i] Нажмите Ctrl+C в этом окне для остановки сервера.{RESET}")
+    print(f"{BOLD}{GREEN}  [OK] Web control panel running on {display_url}{RESET}")
+    print(f"{YELLOW}  [INFO] Press Ctrl+C in this console to terminate server.{RESET}")
     print(f"{GREEN}{'='*60}{RESET}\n")
 
     # Автоматическое открытие в браузере Windows
@@ -62,34 +64,30 @@ def run_web_server(config):
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 def main():
-    # Включение поддержки ANSI цветов в Windows консоли
     if os.name == "nt":
         os.system("")
 
     clear_screen()
     print(BANNER)
 
-    # 1. Загрузка конфигурации
     config = load_config()
 
-    # 2. Сбор первичных данных: определение внешнего IP
-    print(f"{YELLOW}[*] Сбор первичных сетевых данных... Пожалуйста, подождите.{RESET}")
+    print(f"{YELLOW}[INFO] Probing public network gateway...{RESET}")
     try:
         external_ip = asyncio.run(get_external_ip())
     except Exception as e:
-        external_ip = f"Ошибка ({e})"
+        external_ip = f"Unreachable ({e})"
 
-    print(f"{BOLD}Текущий внешний IP-адрес:{RESET} {GREEN}{BOLD}{external_ip}{RESET}\n")
+    print(f"{BOLD}Public IP Address:{RESET} {GREEN}{BOLD}{external_ip}{RESET}\n")
     print(f"{CYAN}{'-'*60}{RESET}")
 
-    # 3. Интерактивный выбор режима работы
     while True:
-        print(f"{BOLD}Выберите режим работы программы:{RESET}")
-        print(f"  [{BOLD}1{RESET}] Продолжить работу в терминале ({CYAN}CLI режим{RESET})")
-        print(f"  [{BOLD}2{RESET}] Запустить веб-панель управления ({GREEN}Web UI режим{RESET})")
-        print(f"  [{BOLD}0{RESET}] Выход")
+        print(f"{BOLD}Select Execution Mode:{RESET}")
+        print(f"  [{BOLD}1{RESET}] Interactive Terminal ({CYAN}CLI Mode{RESET})")
+        print(f"  [{BOLD}2{RESET}] Self-Hosted Web UI ({GREEN}Web UI Mode{RESET})")
+        print(f"  [{BOLD}0{RESET}] Exit")
 
-        mode = input(f"\n{BOLD}Ваш выбор [1/2/0]: {RESET}").strip()
+        mode = input(f"\n{BOLD}Action [1/2/0]: {RESET}").strip()
 
         if mode == "1":
             action = start_cli_loop(config)
@@ -100,14 +98,14 @@ def main():
             run_web_server(config)
             break
         elif mode == "0":
-            print(f"\n{CYAN}До встречи! Завершение NetHub.{RESET}")
+            print(f"\n{CYAN}NetHub process terminated.{RESET}")
             sys.exit(0)
         else:
-            print(f"{RED}[!] Неверная команда. Введите 1, 2 или 0.{RESET}\n")
+            print(f"{RED}[ERR] Invalid command selection. Expected 1, 2 or 0.{RESET}\n")
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print(f"\n\n{YELLOW}[!] Принудительное завершение пользователем.{RESET}")
+        print(f"\n\n{YELLOW}[INFO] Shutdown signal received.{RESET}")
         sys.exit(0)

@@ -29,30 +29,31 @@ def test_web_routes():
     assert auth_resp.status_code == 200
     data = auth_resp.json()
     assert "authenticated" in data
-    print(f"[✓] Auth status endpoint: {data}")
+    print(f"[PASS] auth_status_endpoint: {data['user']}")
 
     # 3. Interfaces API
     ifaces_resp = client.get("/api/interfaces")
     assert ifaces_resp.status_code == 200
     ifaces = ifaces_resp.json()
     assert isinstance(ifaces, list)
-    print(f"[✓] Interfaces API endpoint: {len(ifaces)} interfaces found")
+    print(f"[PASS] interfaces_endpoint: {len(ifaces)} interfaces found")
 
     # 4. Apps API
     apps_resp = client.get("/api/apps")
     assert apps_resp.status_code == 200
     apps = apps_resp.json()
     assert len(apps) > 0
-    print(f"[✓] Apps API endpoint: {len(apps)} apps registered")
+    print(f"[PASS] apps_endpoint: {len(apps)} apps registered")
 
     # 5. Ping API
     ping_resp = client.post("/api/ping", json={"host": "127.0.0.1"})
     assert ping_resp.status_code == 200
     ping_data = ping_resp.json()
     assert ping_data["alive"] is True
-    print(f"[✓] Ping API endpoint: latency {ping_data['latency_ms']} ms")
+    print(f"[PASS] ping_endpoint: latency {ping_data['latency_ms']} ms")
 
-    print("\n🎉 Все тесты Web API пройдены успешно!")
+    print("\n[OK] All Web API test suites passed successfully.")
+
 
 if __name__ == "__main__":
     test_web_routes()

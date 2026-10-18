@@ -1,10 +1,10 @@
 INDEX_HTML = """<!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetHub // Панель управления</title>
-    <!-- Tailwind CSS CDN -->
+    <title>NetHub | Network Operations & Remote Process Control</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242'/%3E%3Cpath d='m8 17 4-4 4 4'/%3E%3Cpath d='M12 13v9'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,207 +12,221 @@ INDEX_HTML = """<!DOCTYPE html>
             theme: {
                 extend: {
                     colors: {
-                        darkbg: '#0B0F19',
-                        darkcard: '#111827',
-                        accent: '#06B6D4',
-                        accentHover: '#0891B2'
+                        surface: '#09090b',
+                        card: '#121215',
+                        border: '#27272a',
+                        muted: '#71717a'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
                     }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0B0F19;
-        }
-        .code-font {
-            font-family: 'JetBrains Mono', monospace;
+            background-color: #09090b;
+            color: #f4f4f5;
         }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col antialiased">
+<body class="min-h-screen flex flex-col font-sans antialiased text-sm">
 
-    <!-- Верхний навбар -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-border bg-[#09090b]/90 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-xl code-font">
-                    ⚡
+                <div class="w-7 h-7 rounded border border-zinc-700 bg-zinc-900 flex items-center justify-center text-zinc-300">
+                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 2a14.5 14.5 0 0 0 0 20M2 12h20"/>
+                    </svg>
                 </div>
-                <div>
-                    <span class="text-xl font-bold tracking-tight text-white">Net<span class="text-cyan-400">Hub</span></span>
-                    <span class="ml-2 text-xs uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 code-font">Win11 Hybrid</span>
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold tracking-tight text-white">NetHub</span>
+                    <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono border border-zinc-700">v1.0.0</span>
                 </div>
             </div>
 
-            <!-- Внешний IP & Статус пользователя -->
-            <div class="flex items-center space-x-4">
-                <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs code-font">
-                    <span class="text-slate-400">Внешний IP:</span>
-                    <span id="externalIpBadge" class="text-cyan-400 font-bold">Определение...</span>
+            <!-- Metadata & Auth Badge -->
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 px-2.5 py-1 rounded bg-zinc-900/80 border border-zinc-800 text-xs font-mono">
+                    <span class="text-zinc-500">Public IP:</span>
+                    <span id="externalIpBadge" class="text-sky-400 font-medium">Resolving...</span>
                 </div>
 
-                <div id="authStatusContainer" class="flex items-center space-x-3">
-                    <!-- Заполняется JS -->
+                <div id="authStatusContainer" class="flex items-center space-x-2">
+                    <!-- Dynamic Auth State -->
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Баннер режима отладки / Google OAuth -->
-    <div id="devModeNotice" class="hidden bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-300 text-center">
-        ⚡ <b>Режим быстрой настройки:</b> Google Client ID не задан в <code class="bg-amber-950/60 px-1 py-0.5 rounded">config.json</code>. Доступ открыт в режиме администратора для локальной отладки.
+    <!-- Dev Mode Notice -->
+    <div id="devModeNotice" class="hidden bg-amber-950/30 border-b border-amber-800/40 px-4 py-2 text-xs text-amber-200/90 text-center font-mono">
+        Notice: Running in development mode. Google OAuth authentication is bypassed until client_id is configured.
     </div>
 
-    <!-- Основной контент -->
-    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <!-- Навигационные вкладки -->
-        <div class="flex space-x-2 border-b border-slate-800 mb-8 pb-3 overflow-x-auto">
-            <button onclick="switchTab('scanner')" id="tabBtn-scanner" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                🔍 Сканер и Пинг
+    <!-- Main Container -->
+    <main class="flex-1 max-w-6xl mx-auto px-4 py-6 w-full space-y-6">
+        <!-- Tab Navigation -->
+        <nav class="flex space-x-1 border-b border-border pb-2 overflow-x-auto">
+            <button onclick="switchTab('scanner')" id="tabBtn-scanner" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition flex items-center space-x-2 bg-zinc-800 text-zinc-100 border border-zinc-700">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+                <span>Network Diagnostics</span>
             </button>
-            <button onclick="switchTab('interfaces')" id="tabBtn-interfaces" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/50">
-                🌐 Сетевые интерфейсы
+            <button onclick="switchTab('interfaces')" id="tabBtn-interfaces" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                <span>Interfaces</span>
             </button>
-            <button onclick="switchTab('apps')" id="tabBtn-apps" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/50">
-                🚀 Запуск приложений
+            <button onclick="switchTab('apps')" id="tabBtn-apps" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+                </svg>
+                <span>Process Manager</span>
             </button>
-            <button onclick="switchTab('settings')" id="tabBtn-settings" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/50">
-                ⚙️ Настройки и OAuth
+            <button onclick="switchTab('settings')" id="tabBtn-settings" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>OAuth Configuration</span>
             </button>
-        </div>
+        </nav>
 
-        <!-- ВКЛАДКА 1: СКАНЕР И ПИНГ -->
-        <section id="tabContent-scanner" class="space-y-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Блок Пинга -->
-                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 shadow-xl backdrop-blur">
-                    <h3 class="text-lg font-semibold text-white mb-2 flex items-center">
-                        <span class="mr-2 text-cyan-400">📡</span> Проверка доступности хоста (Ping)
-                    </h3>
-                    <p class="text-sm text-slate-400 mb-4">Отправка сетевых запросов и замер задержки отклика сервера.</p>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">IP-адрес или домен</label>
-                            <div class="flex space-x-2">
-                                <input type="text" id="pingHostInput" value="8.8.8.8" placeholder="например, google.com или 192.168.1.1" 
-                                       class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white code-font focus:outline-none focus:border-cyan-500">
-                                <button onclick="runPing()" id="pingBtn" 
-                                        class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-cyan-600/20">
-                                    Ping
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Результат Пинга -->
-                        <div id="pingResultCard" class="hidden p-4 rounded-lg border text-sm code-font transition-all">
-                            <!-- Заполняется JS -->
-                        </div>
-                    </div>
+        <!-- SECTION 1: NETWORK DIAGNOSTICS -->
+        <section id="tabContent-scanner" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Ping Panel -->
+            <div class="border border-border bg-[#121215] rounded-lg p-5 space-y-4">
+                <div>
+                    <h2 class="text-sm font-semibold text-white tracking-tight">Host Ping Diagnostic</h2>
+                    <p class="text-xs text-muted mt-0.5">Executes ICMP echo verification with round-trip latency parsing.</p>
                 </div>
 
-                <!-- Блок Сканера Портов -->
-                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 shadow-xl backdrop-blur">
-                    <h3 class="text-lg font-semibold text-white mb-2 flex items-center">
-                        <span class="mr-2 text-cyan-400">🔌</span> Асинхронный сканер TCP портов
-                    </h3>
-                    <p class="text-sm text-slate-400 mb-4">Параллельная проверка открытых портов на базе asyncio.</p>
-
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Целевой хост</label>
-                                <input type="text" id="scanHostInput" value="127.0.0.1" placeholder="IP или домен" 
-                                       class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white code-font focus:outline-none focus:border-cyan-500">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Порты (диапазон / список)</label>
-                                <input type="text" id="scanPortsInput" value="20-1000" placeholder="Пример: 80,443,8080 или 1-500" 
-                                       class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white code-font focus:outline-none focus:border-cyan-500">
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-2">
-                            <div class="flex space-x-2">
-                                <button onclick="setPresetPorts('top20')" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Топ 20</button>
-                                <button onclick="setPresetPorts('web')" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Web (80,443,8080...)</button>
-                                <button onclick="setPresetPorts('range1k')" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">1 - 1024</button>
-                            </div>
-                            <button onclick="runPortScan()" id="scanBtn" 
-                                    class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-cyan-600/20">
-                                Сканировать
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1">Target Host / Domain</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="pingHostInput" value="8.8.8.8" placeholder="e.g. 1.1.1.1, gateway.local" 
+                                   class="flex-1 bg-zinc-900 border border-zinc-700/80 rounded px-3 py-1.5 text-xs text-zinc-100 font-mono focus:outline-none focus:border-zinc-500">
+                            <button onclick="runPing()" id="pingBtn" 
+                                    class="px-4 py-1.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium rounded transition">
+                                Ping
                             </button>
                         </div>
+                    </div>
 
-                        <!-- Результат сканирования -->
-                        <div id="scanResultCard" class="hidden p-4 rounded-lg bg-slate-800/60 border border-slate-700/80 text-sm code-font">
-                            <!-- Заполняется JS -->
+                    <div id="pingResultCard" class="hidden p-3 rounded border text-xs font-mono transition-all">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Port Scanner Panel -->
+            <div class="border border-border bg-[#121215] rounded-lg p-5 space-y-4">
+                <div>
+                    <h2 class="text-sm font-semibold text-white tracking-tight">TCP Port Inspector</h2>
+                    <p class="text-xs text-muted mt-0.5">Concurrent asynchronous socket verification powered by asyncio.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1">Target IP / Hostname</label>
+                            <input type="text" id="scanHostInput" value="127.0.0.1" placeholder="127.0.0.1" 
+                                   class="w-full bg-zinc-900 border border-zinc-700/80 rounded px-3 py-1.5 text-xs text-zinc-100 font-mono focus:outline-none focus:border-zinc-500">
                         </div>
+                        <div>
+                            <label class="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1">Port Range or List</label>
+                            <input type="text" id="scanPortsInput" value="20-1000" placeholder="e.g. 80,443,8080 or 1-1024" 
+                                   class="w-full bg-zinc-900 border border-zinc-700/80 rounded px-3 py-1.5 text-xs text-zinc-100 font-mono focus:outline-none focus:border-zinc-500">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <div class="flex space-x-1.5">
+                            <button onclick="setPresetPorts('top20')" class="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700/60">Top 20</button>
+                            <button onclick="setPresetPorts('web')" class="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700/60">HTTP/S</button>
+                            <button onclick="setPresetPorts('range1k')" class="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700/60">1-1024</button>
+                        </div>
+                        <button onclick="runPortScan()" id="scanBtn" 
+                                class="px-4 py-1.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium rounded transition">
+                            Scan Target
+                        </button>
+                    </div>
+
+                    <div id="scanResultCard" class="hidden p-3 rounded bg-zinc-900/60 border border-zinc-800 text-xs font-mono">
+                        <!-- Filled by JS -->
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ВКЛАДКА 2: СЕТЕВЫЕ ИНТЕРФЕЙСЫ -->
-        <section id="tabContent-interfaces" class="hidden space-y-6">
+        <!-- SECTION 2: NETWORK INTERFACES -->
+        <section id="tabContent-interfaces" class="hidden space-y-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <h3 class="text-lg font-semibold text-white">Адаптеры и интерфейсы Windows</h3>
-                    <p class="text-sm text-slate-400">Информация о физических и виртуальных сетевых картах системы.</p>
+                    <h2 class="text-sm font-semibold text-white tracking-tight">Active Network Adapters</h2>
+                    <p class="text-xs text-muted mt-0.5">Physical and virtual network interfaces detected on the host.</p>
                 </div>
-                <button onclick="loadInterfaces()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700 transition">
-                    🔄 Обновить список
+                <button onclick="loadInterfaces()" class="px-3 py-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-mono rounded border border-zinc-700 transition">
+                    Refresh
                 </button>
             </div>
 
-            <div id="interfacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Карточки интерфейсов рендерятся через JS -->
+            <div id="interfacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated dynamically via JS -->
             </div>
         </section>
 
-        <!-- ВКЛАДКА 3: ЗАПУСК ПРИЛОЖЕНИЙ -->
-        <section id="tabContent-apps" class="hidden space-y-6">
+        <!-- SECTION 3: PROCESS LAUNCHER -->
+        <section id="tabContent-apps" class="hidden space-y-4">
             <div>
-                <h3 class="text-lg font-semibold text-white">Менеджер процессов и ярлыков</h3>
-                <p class="text-sm text-slate-400">Безопасный удаленный запуск программ и .lnk ярлыков на хосте Windows 11.</p>
+                <h2 class="text-sm font-semibold text-white tracking-tight">Process Execution Manager</h2>
+                <p class="text-xs text-muted mt-0.5">Trigger verified local applications, scripts, or Windows shortcuts (.lnk) configured in config.json.</p>
             </div>
 
-            <div id="appsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Карточки приложений -->
+            <div id="appsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated dynamically via JS -->
             </div>
 
-            <!-- Уведомление о запуске -->
-            <div id="launchToast" class="fixed bottom-6 right-6 hidden bg-slate-900 border border-cyan-500/50 p-4 rounded-xl shadow-2xl z-50 text-sm flex items-center space-x-3">
-                <span class="text-cyan-400 text-xl">🚀</span>
-                <span id="launchToastMsg" class="text-white font-medium">Приложение запускается...</span>
+            <!-- Execution Status Pill -->
+            <div id="launchToast" class="fixed bottom-6 right-6 hidden bg-zinc-900 border border-zinc-700 p-3 rounded-md shadow-xl z-50 text-xs flex items-center space-x-2.5 font-mono">
+                <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                <span id="launchToastMsg" class="text-zinc-200">Executing target...</span>
             </div>
         </section>
 
-        <!-- ВКЛАДКА 4: НАСТРОЙКИ И GOOGLE OAUTH -->
-        <section id="tabContent-settings" class="hidden space-y-6">
-            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 shadow-xl">
-                <h3 class="text-lg font-semibold text-white mb-2">Настройка Google OAuth 2.0</h3>
-                <p class="text-sm text-slate-400 mb-6">Инструкция по защите панели управления учетной записью Google.</p>
+        <!-- SECTION 4: OAUTH & SETTINGS -->
+        <section id="tabContent-settings" class="hidden space-y-4">
+            <div class="border border-border bg-[#121215] rounded-lg p-5 space-y-4">
+                <div>
+                    <h2 class="text-sm font-semibold text-white tracking-tight">Google OAuth 2.0 Security Configuration</h2>
+                    <p class="text-xs text-muted mt-0.5">Specifications for securing this control panel with single sign-on.</p>
+                </div>
 
-                <div class="space-y-4 text-sm text-slate-300">
-                    <div class="p-4 rounded-lg bg-slate-800/60 border border-slate-700/60 space-y-2">
-                        <div class="font-semibold text-white">Шаги подключения:</div>
-                        <ol class="list-decimal list-inside space-y-1 text-slate-400 text-xs sm:text-sm">
-                            <li>Перейдите в <a href="https://console.cloud.google.com/" target="_blank" class="text-cyan-400 underline">Google Cloud Console</a> и создайте проект.</li>
-                            <li>В разделе <b>APIs & Services -> Credentials</b> создайте <b>OAuth 2.0 Client ID</b> (Web application).</li>
-                            <li>Укажите <b>Authorized redirect URI</b>: <code class="bg-slate-900 text-cyan-300 px-2 py-0.5 rounded" id="cfgRedirectUri">http://localhost:8080/auth/callback</code></li>
-                            <li>Скопируйте <code>client_id</code> и <code>client_secret</code> в файл <code class="text-cyan-400">config.json</code> в корне утилиты.</li>
-                            <li>Добавьте ваш Gmail в массив <code class="text-cyan-400">allowed_emails</code>.</li>
+                <div class="space-y-4 text-xs">
+                    <div class="p-3.5 rounded bg-zinc-900/60 border border-zinc-800 space-y-2 text-zinc-300">
+                        <div class="font-medium text-white">OAuth Setup Directives:</div>
+                        <ol class="list-decimal list-inside space-y-1 text-zinc-400 font-mono text-[11px]">
+                            <li>Register a project on <a href="https://console.cloud.google.com/" target="_blank" class="text-sky-400 hover:underline">Google Cloud Console</a>.</li>
+                            <li>Navigate to <b>APIs & Services</b> &rarr; <b>Credentials</b> and create an <b>OAuth 2.0 Client ID</b> (Web application).</li>
+                            <li>Set <b>Authorized redirect URI</b> to: <code class="bg-black/60 text-zinc-200 px-1.5 py-0.5 rounded border border-zinc-800">http://localhost:8080/auth/callback</code></li>
+                            <li>Save <code>client_id</code> and <code>client_secret</code> into <code>config.json</code> in the NetHub folder.</li>
+                            <li>Add your authorized email to <code>allowed_emails</code> array.</li>
                         </ol>
                     </div>
 
-                    <div class="pt-4">
-                        <h4 class="font-medium text-white mb-2">Разрешенные Email-адреса (Белый список):</h4>
-                        <div id="allowedEmailsList" class="flex flex-wrap gap-2">
-                            <!-- Заполняется JS -->
+                    <div>
+                        <div class="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-2">Whitelisted Email Addresses:</div>
+                        <div id="allowedEmailsList" class="flex flex-wrap gap-1.5">
+                            <!-- Populated dynamically via JS -->
                         </div>
                     </div>
                 </div>
@@ -220,30 +234,28 @@ INDEX_HTML = """<!DOCTYPE html>
         </section>
     </main>
 
-    <!-- Подвал -->
-    <footer class="border-t border-slate-800 py-6 mt-12 bg-slate-900/40 text-center text-xs text-slate-500">
-        NetHub Windows 11 Network Toolkit • FastAPI + AsyncIO • Self-Hosted Edition
+    <!-- Footer -->
+    <footer class="border-t border-border py-4 mt-8 bg-[#09090b] text-center text-[11px] text-zinc-500 font-mono">
+        NetHub Windows 11 Network Toolkit &bull; FastAPI Subsystem &bull; Self-Hosted Control Plane
     </footer>
 
-    <!-- Скрипты фронтенда -->
+    <!-- Client Script -->
     <script>
-        // Переключение табов
         function switchTab(tabId) {
             document.querySelectorAll('[id^="tabContent-"]').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/50";
+                btn.className = "tab-btn px-3 py-1.5 rounded text-xs font-medium transition flex items-center space-x-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50";
             });
 
             const content = document.getElementById(`tabContent-${tabId}`);
             const btn = document.getElementById(`tabBtn-${tabId}`);
             if (content) content.classList.remove('hidden');
-            if (btn) btn.className = "tab-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-cyan-500/10 text-cyan-400 border border-cyan-500/30";
+            if (btn) btn.className = "tab-btn px-3 py-1.5 rounded text-xs font-medium transition flex items-center space-x-2 bg-zinc-800 text-zinc-100 border border-zinc-700";
 
             if (tabId === 'interfaces') loadInterfaces();
             if (tabId === 'apps') loadApps();
         }
 
-        // Пресеты портов
         function setPresetPorts(preset) {
             const input = document.getElementById('scanPortsInput');
             if (preset === 'top20') input.value = "21,22,23,25,53,80,110,135,139,143,443,445,993,995,1433,3306,3389,5432,8000,8080";
@@ -251,10 +263,8 @@ INDEX_HTML = """<!DOCTYPE html>
             if (preset === 'range1k') input.value = "1-1024";
         }
 
-        // Загрузка начальных данных
         async function initData() {
             try {
-                // Статус авторизации
                 const authRes = await fetch('/auth/status');
                 const authData = await authRes.json();
                 
@@ -262,46 +272,45 @@ INDEX_HTML = """<!DOCTYPE html>
                 if (authData.dev_mode) {
                     document.getElementById('devModeNotice').classList.remove('hidden');
                     container.innerHTML = `
-                        <span class="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
-                            Admin (Dev Mode)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span>
+                            Dev Mode
                         </span>
                     `;
                 } else if (authData.authenticated) {
                     container.innerHTML = `
-                        <span class="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
-                            👤 ${authData.user}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>
+                            ${authData.user}
                         </span>
-                        <a href="/auth/logout" class="text-xs text-slate-400 hover:text-red-400">Выход</a>
+                        <a href="/auth/logout" class="text-xs text-zinc-400 hover:text-zinc-200 transition font-mono ml-2">Logout</a>
                     `;
                 } else {
                     container.innerHTML = `
-                        <a href="/auth/login" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-500 text-white text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
-                            <span>Войти через Google</span>
+                        <a href="/auth/login" class="px-2.5 py-1 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium rounded transition">
+                            Sign in with Google
                         </a>
                     `;
                 }
 
-                // Внешний IP
                 const ipRes = await fetch('/api/ip');
                 const ipData = await ipRes.json();
-                document.getElementById('externalIpBadge').textContent = ipData.ip || 'Недоступен';
+                document.getElementById('externalIpBadge').textContent = ipData.ip || 'Unreachable';
 
-                // Настройки email
                 const emailContainer = document.getElementById('allowedEmailsList');
                 if (authData.allowed_emails && authData.allowed_emails.length > 0) {
                     emailContainer.innerHTML = authData.allowed_emails.map(e => `
-                        <span class="px-2.5 py-1 bg-slate-800 text-cyan-300 rounded text-xs border border-slate-700">${e}</span>
+                        <span class="px-2 py-0.5 bg-zinc-900 text-zinc-300 rounded font-mono text-[11px] border border-zinc-800">${e}</span>
                     `).join('');
                 } else {
-                    emailContainer.innerHTML = '<span class="text-xs text-slate-500">Список пуст</span>';
+                    emailContainer.innerHTML = '<span class="text-xs text-zinc-500 font-mono">No accounts registered</span>';
                 }
 
             } catch (err) {
-                console.error("Ошибка инициализации:", err);
+                console.error("Initialization error:", err);
             }
         }
 
-        // Пинг
         async function runPing() {
             const host = document.getElementById('pingHostInput').value.trim();
             const btn = document.getElementById('pingBtn');
@@ -310,10 +319,10 @@ INDEX_HTML = """<!DOCTYPE html>
             if (!host) return;
 
             btn.disabled = true;
-            btn.textContent = "Проверка...";
+            btn.textContent = "Probing...";
             card.classList.remove('hidden');
-            card.className = "p-4 rounded-lg bg-slate-800/40 border border-slate-700 text-slate-300 text-xs code-font";
-            card.innerHTML = "⏳ Отправка пакетов...";
+            card.className = "p-3 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-mono";
+            card.innerHTML = "Executing ICMP echo probe...";
 
             try {
                 const res = await fetch('/api/ping', {
@@ -324,27 +333,35 @@ INDEX_HTML = """<!DOCTYPE html>
                 const data = await res.json();
 
                 if (data.alive) {
-                    card.className = "p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs code-font";
+                    const latency = data.latency_ms !== null ? `${data.latency_ms} ms` : '<1 ms';
+                    card.className = "p-3 rounded bg-zinc-900/90 border border-emerald-500/30 text-emerald-400 text-xs font-mono";
                     card.innerHTML = `
-                        <div class="font-bold flex items-center justify-between">
-                            <span>✓ Хост ${data.host} ДОСТУПЕН</span>
-                            <span>Задержка: ${data.latency_ms !== null ? data.latency_ms + ' ms' : '< 1 ms'}</span>
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
+                                Host ${data.host} is reachable
+                            </span>
+                            <span class="text-zinc-400">RTT: ${latency}</span>
                         </div>
                     `;
                 } else {
-                    card.className = "p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-xs code-font";
-                    card.innerHTML = `✗ Хост ${data.host} НЕДОСТУПЕН (${data.error || 'Таймаут'})`;
+                    card.className = "p-3 rounded bg-zinc-900/90 border border-red-500/30 text-red-400 text-xs font-mono";
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                            <span>Host ${data.host} unreachable (${data.error || 'Request timed out'})</span>
+                        </div>
+                    `;
                 }
             } catch (err) {
-                card.className = "p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-xs code-font";
-                card.textContent = "Ошибка выполнения запроса: " + err;
+                card.className = "p-3 rounded bg-zinc-900/90 border border-red-500/30 text-red-400 text-xs font-mono";
+                card.textContent = "Execution failed: " + err;
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Ping";
             }
         }
 
-        // Сканирование портов
         async function runPortScan() {
             const host = document.getElementById('scanHostInput').value.trim();
             const portsVal = document.getElementById('scanPortsInput').value.trim();
@@ -354,9 +371,9 @@ INDEX_HTML = """<!DOCTYPE html>
             if (!host) return;
 
             btn.disabled = true;
-            btn.textContent = "Сканирую...";
+            btn.textContent = "Scanning...";
             card.classList.remove('hidden');
-            card.innerHTML = "⏳ Асинхронное сканирование портов... Пожалуйста, подождите...";
+            card.innerHTML = "Executing concurrent socket connections...";
 
             try {
                 const res = await fetch('/api/scan', {
@@ -367,73 +384,72 @@ INDEX_HTML = """<!DOCTYPE html>
                 const data = await res.json();
 
                 if (data.error) {
-                    card.innerHTML = `<span class="text-red-400">Ошибка: ${data.error}</span>`;
+                    card.innerHTML = `<span class="text-red-400">Error: ${data.error}</span>`;
                     return;
                 }
 
                 let html = `
-                    <div class="border-b border-slate-700/80 pb-2 mb-3 flex justify-between items-center">
-                        <span class="text-white font-semibold">Хост: ${data.host}</span>
-                        <span class="text-xs text-slate-400">Проверено: ${data.scanned_total} | Найдено: ${data.open_count}</span>
+                    <div class="border-b border-zinc-800 pb-2 mb-2 flex justify-between items-center text-zinc-300">
+                        <span class="font-medium">Target: ${data.host}</span>
+                        <span class="text-zinc-500">Scanned: ${data.scanned_total} | Open: ${data.open_count}</span>
                     </div>
                 `;
 
                 if (data.open_ports.length > 0) {
-                    html += `<div class="flex flex-wrap gap-2">`;
+                    html += `<div class="flex flex-wrap gap-1.5 pt-1">`;
                     data.open_ports.forEach(p => {
                         html += `
-                            <span class="px-2.5 py-1 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 rounded text-xs font-bold">
-                                PORT ${p} : OPEN
+                            <span class="px-2 py-0.5 bg-zinc-800 border border-emerald-500/30 text-emerald-400 rounded text-[11px] font-mono">
+                                ${p} / TCP OPEN
                             </span>
                         `;
                     });
                     html += `</div>`;
                 } else {
-                    html += `<p class="text-slate-400 text-xs">Открытых портов не обнаружено.</p>`;
+                    html += `<p class="text-zinc-500 text-[11px]">No responsive TCP ports detected.</p>`;
                 }
 
                 card.innerHTML = html;
             } catch (err) {
-                card.innerHTML = `<span class="text-red-400">Ошибка запроса: ${err}</span>`;
+                card.innerHTML = `<span class="text-red-400">Scan request failed: ${err}</span>`;
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Сканировать";
+                btn.textContent = "Scan Target";
             }
         }
 
-        // Загрузка сетевых интерфейсов
         async function loadInterfaces() {
             const grid = document.getElementById('interfacesGrid');
-            grid.innerHTML = '<div class="col-span-full text-center text-slate-500 text-sm py-8">Загрузка адаптеров...</div>';
+            grid.innerHTML = '<div class="col-span-full text-center text-zinc-500 text-xs py-6 font-mono">Loading interface states...</div>';
 
             try {
                 const res = await fetch('/api/interfaces');
                 const ifaces = await res.json();
 
                 if (ifaces.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center text-slate-500 text-sm">Сетевые интерфейсы не найдены</div>';
+                    grid.innerHTML = '<div class="col-span-full text-center text-zinc-500 text-xs py-6 font-mono">No network adapters detected</div>';
                     return;
                 }
 
                 grid.innerHTML = ifaces.map(iface => {
                     const statusBadge = iface.is_up 
-                        ? '<span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded">ONLINE</span>'
-                        : '<span class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded">OFFLINE</span>';
+                        ? '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-emerald-400 border border-zinc-700"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>UP</span>'
+                        : '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-500 border border-zinc-700"><span class="w-1.5 h-1.5 rounded-full bg-zinc-500 mr-1.5"></span>DOWN</span>';
                     
-                    const ips = iface.ipv4.map(v4 => `<div class="code-font text-cyan-300">${v4.address} <span class="text-slate-500 text-xs">/ ${v4.netmask}</span></div>`).join('') || '<div class="text-slate-500 text-xs">Нет IPv4</div>';
+                    const ips = iface.ipv4.map(v4 => `<div class="text-zinc-300 font-mono text-[11px]">${v4.address} <span class="text-zinc-500 text-[10px]">/ ${v4.netmask}</span></div>`).join('') || '<div class="text-zinc-600 text-[11px] font-mono">No IPv4 bound</div>';
 
                     return `
-                        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
+                        <div class="border border-border bg-[#121215] rounded-md p-4 space-y-3">
                             <div class="flex justify-between items-start">
-                                <h4 class="font-semibold text-white text-base truncate max-w-[200px]" title="${iface.name}">${iface.name}</h4>
+                                <h3 class="font-medium text-white text-xs truncate max-w-[200px]" title="${iface.name}">${iface.name}</h3>
                                 ${statusBadge}
                             </div>
-                            <div class="text-xs text-slate-400 space-y-1">
-                                <div>Скорость: <span class="text-slate-200">${iface.speed_mbps} Mbps</span></div>
-                                <div>MAC: <span class="code-font text-slate-300">${iface.mac || 'N/A'}</span></div>
+                            <div class="text-[11px] font-mono text-zinc-400 space-y-1">
+                                <div>Link Speed: <span class="text-zinc-200">${iface.speed_mbps} Mbps</span></div>
+                                <div>MAC Address: <span class="text-zinc-300">${iface.mac || 'N/A'}</span></div>
                             </div>
-                            <div class="pt-2 border-t border-slate-800 text-xs">
-                                <div class="text-slate-400 mb-1">IPv4 Адреса:</div>
+                            <div class="pt-2 border-t border-zinc-800/80">
+                                <div class="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1">IPv4 Binding:</div>
                                 ${ips}
                             </div>
                         </div>
@@ -441,75 +457,72 @@ INDEX_HTML = """<!DOCTYPE html>
                 }).join('');
 
             } catch (err) {
-                grid.innerHTML = `<div class="col-span-full text-center text-red-400 text-sm">Ошибка загрузки: ${err}</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center text-red-400 text-xs py-6 font-mono">Failed to retrieve interfaces: ${err}</div>`;
             }
         }
 
-        // Загрузка приложений
         async function loadApps() {
             const grid = document.getElementById('appsGrid');
-            grid.innerHTML = '<div class="col-span-full text-center text-slate-500 text-sm py-8">Загрузка списка программ...</div>';
+            grid.innerHTML = '<div class="col-span-full text-center text-zinc-500 text-xs py-6 font-mono">Loading registered binaries...</div>';
 
             try {
                 const res = await fetch('/api/apps');
                 const apps = await res.json();
 
                 if (apps.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center text-slate-500 text-sm">Нет зарегистрированных программ в config.json</div>';
+                    grid.innerHTML = '<div class="col-span-full text-center text-zinc-500 text-xs py-6 font-mono">No processes configured in config.json</div>';
                     return;
                 }
 
                 grid.innerHTML = apps.map(app => `
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
+                    <div class="border border-border bg-[#121215] rounded-md p-4 flex flex-col justify-between space-y-3 hover:border-zinc-700 transition">
                         <div>
-                            <div class="flex items-center space-x-3 mb-2">
-                                <span class="text-2xl">💻</span>
-                                <h4 class="font-semibold text-white text-base">${app.name}</h4>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <h3 class="font-medium text-white text-xs">${app.name}</h3>
+                                <span class="text-[10px] font-mono uppercase px-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">Binary</span>
                             </div>
-                            <p class="text-xs text-slate-400 mb-2">${app.description || 'Ярлык Windows'}</p>
-                            <div class="text-xs code-font text-slate-500 truncate" title="${app.path}">Путь: ${app.path}</div>
+                            <p class="text-[11px] text-zinc-400 mb-2">${app.description || 'Host Process Execution'}</p>
+                            <div class="text-[10px] font-mono text-zinc-500 truncate" title="${app.path}">Path: ${app.path}</div>
                         </div>
 
                         <button onclick="launchApp('${app.id}')" 
-                                class="w-full py-2 px-4 bg-slate-800 hover:bg-cyan-600 hover:text-white text-slate-200 text-xs font-medium rounded-lg border border-slate-700 hover:border-cyan-500 transition flex items-center justify-center space-x-2">
-                            <span>Запустить</span>
-                            <span>▶</span>
+                                class="w-full py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-mono font-medium rounded border border-zinc-700 transition flex items-center justify-center space-x-1.5">
+                            <span>Execute Target</span>
+                            <span class="text-zinc-500">&rarr;</span>
                         </button>
                     </div>
                 `).join('');
 
             } catch (err) {
-                grid.innerHTML = `<div class="col-span-full text-center text-red-400 text-sm">Ошибка загрузки приложений: ${err}</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center text-red-400 text-xs py-6 font-mono">Failed to load processes: ${err}</div>`;
             }
         }
 
-        // Запуск программы
         async function launchApp(appId) {
             const toast = document.getElementById('launchToast');
             const msg = document.getElementById('launchToastMsg');
 
             toast.classList.remove('hidden');
-            msg.textContent = `Запуск ${appId}...`;
+            msg.textContent = `Dispatching execution signal for ${appId}...`;
 
             try {
                 const res = await fetch(`/api/launch/${appId}`, { method: 'POST' });
                 const data = await res.json();
 
                 if (data.success) {
-                    msg.textContent = `✓ ${data.message}`;
+                    msg.textContent = `Signal OK: ${data.message}`;
                 } else {
-                    msg.textContent = `✗ ${data.error}`;
+                    msg.textContent = `Signal Error: ${data.error}`;
                 }
             } catch (err) {
-                msg.textContent = `Ошибка: ${err}`;
+                msg.textContent = `Execution failed: ${err}`;
             }
 
             setTimeout(() => {
                 toast.classList.add('hidden');
-            }, 4500);
+            }, 4000);
         }
 
-        // Старт при загрузке
         window.addEventListener('DOMContentLoaded', () => {
             initData();
         });
