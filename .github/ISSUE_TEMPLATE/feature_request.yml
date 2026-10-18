@@ -1,0 +1,30 @@
+name: Feature Request / Предложение новой функции
+description: Suggest an idea or enhancement for NetHub.
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a cool idea for NetHub? We'd love to hear it!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem? / Связано ли предложение с проблемой?
+      description: A clear description of what the problem is.
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like / Опишите желаемое решение
+      description: How should this feature work?
+      placeholder: I would like NetHub to...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered / Альтернативы
+      description: Any alternative solutions or workarounds you've looked at.

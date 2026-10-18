@@ -1,0 +1,28 @@
+PackageIdentifier: Frozen-starTony.NetHub
+PackageVersion: 1.0.0
+PackageLocale: en-US
+Publisher: Frozen-starTony
+PublisherUrl: https://github.com/Frozen-starTony
+PublisherSupportUrl: https://github.com/Frozen-starTony/nethub/issues
+PackageName: NetHub
+PackageUrl: https://github.com/Frozen-starTony/nethub
+License: MIT
+LicenseUrl: https://github.com/Frozen-starTony/nethub/blob/main/LICENSE
+Copyright: Copyright (c) 2026 Frozen-starTony
+ShortDescription: Hybrid Windows 11 utility for detecting White vs Gray (CGNAT) IPs, 1-click UPnP router port forwarding, and self-hosted game servers.
+Description: |
+  NetHub is a developer and gamer network utility designed for Windows 11.
+  It enables instant White vs Gray (CGNAT) IP detection, automated 1-click UPnP router port forwarding
+  without administrative router credentials, external WAN accessibility testing, and remote process
+  dispatching via a built-in FastAPI web dashboard.
+Moniker: nethub
+Tags:
+  - networking
+  - port-forwarding
+  - upnp
+  - cgnat
+  - minecraft-server
+  - self-hosted
+  - windows-11
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

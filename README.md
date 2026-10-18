@@ -6,7 +6,8 @@
 [![License](https://img.shields.io/badge/license-MIT-black?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-black?style=flat-square)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/platform-Windows%2011-black?style=flat-square)](https://www.microsoft.com/windows)
-[![Architecture](https://img.shields.io/badge/architecture-CLI%20%2B%20Web%20UI-black?style=flat-square)](#)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+[![Roadmap](https://img.shields.io/badge/roadmap-v1.1%20planned-blue?style=flat-square)](ROADMAP.md)
 [![Localization](https://img.shields.io/badge/languages-RU%20%7C%20EN-black?style=flat-square)](#)
 
 **Универсальная утилита Windows 11 для определения Белого IP, автоматического UPnP проброса портов роутера без паролей и удаленного хостинга серверов.**
@@ -35,6 +36,8 @@
 
 - [📥 Скачать готовый NetHub.exe (v1.0.0)](https://github.com/Frozen-starTony/nethub/releases/latest)
 - [📦 Исходный код на GitHub](https://github.com/Frozen-starTony/nethub)
+- [🤝 Руководство для контрибьюторов / Contributing Guide](CONTRIBUTING.md)
+- [🗺️ План развития / Roadmap](ROADMAP.md)
 - [🛠 Шаблоны проброса портов](#предустановленные-шаблоны-портов)
 
 ---

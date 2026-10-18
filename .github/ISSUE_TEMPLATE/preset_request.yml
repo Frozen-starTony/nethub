@@ -1,0 +1,40 @@
+name: Game Port Preset Request / Добавить пресет для игры
+description: Request a new 1-click UPnP port forwarding template for a game or tool.
+title: "[PRESET]: Add preset for <Game/Service Name>"
+labels: ["enhancement", "good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Want your favorite game server added to NetHub's 1-click port forwarder? Fill in the details below.
+  - type: input
+    id: game_name
+    attributes:
+      label: Game / Service Name / Название игры или службы
+      placeholder: e.g. Satisfactory Dedicated Server
+    validations:
+      required: true
+  - type: input
+    id: port_numbers
+    attributes:
+      label: Port Numbers / Номера портов
+      description: Specify the ports required (e.g. 7777, 15000, 15777)
+      placeholder: "7777, 15000"
+    validations:
+      required: true
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocol / Протокол
+      options:
+        - TCP
+        - UDP
+        - Both (TCP + UDP)
+    validations:
+      required: true
+  - type: textarea
+    id: official_docs
+    attributes:
+      label: Official Documentation / Ссылка на документацию
+      description: Link to official port requirements (wiki or developer documentation).
+      placeholder: https://satisfactory.fandom.com/wiki/Dedicated_servers#Port_forwarding

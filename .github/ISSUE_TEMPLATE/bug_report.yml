@@ -1,0 +1,68 @@
+name: Bug Report / Сообщение об ошибке
+description: Create a report to help us reproduce and fix a bug in NetHub.
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please provide as much detail as possible.
+  - type: dropdown
+    id: interface_mode
+    attributes:
+      label: Mode / Режим работы
+      description: In which mode did the issue occur?
+      options:
+        - Interactive CLI (Terminal)
+        - Self-Hosted Web UI (Browser)
+        - Standalone NetHub.exe launch
+        - Source code (python main.py)
+    validations:
+      required: true
+  - type: input
+    id: router_model
+    attributes:
+      label: Router Model / Модель роутера
+      description: e.g. Keenetic Hero 4G, TP-Link Archer AX55, ASUS RT-AX58U, MikroTik
+      placeholder: TP-Link Archer AX55
+  - type: input
+    id: isp_name
+    attributes:
+      label: ISP / Интернет-провайдер
+      description: e.g. Rostelecom, MTS, Dom.ru, Comcast, Deutsche Telekom
+      placeholder: Rostelecom
+  - type: dropdown
+    id: ip_classification
+    attributes:
+      label: IP Type detected / Тип IP
+      options:
+        - WHITE_PUBLIC
+        - GRAY_CGNAT
+        - PRIVATE
+        - Not sure / Failed to detect
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description / Описание проблемы
+      description: A clear and concise description of what went wrong.
+      placeholder: Port 25565 mapping failed with error...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce / Шаги для воспроизведения
+      description: How can we reproduce this?
+      value: |
+        1. Launch NetHub.exe
+        2. Choose option 2 (Web UI)
+        3. Click 'Open Port 25565'
+        4. See error message
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Output / Логи или вывод ошибки
+      description: Copy and paste relevant logs from terminal or browser console.
+      render: shell
